@@ -36,8 +36,10 @@ public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .csrf().disable()
+                .cors()
+                .and()
                 .authorizeRequests()
-                .antMatchers("/admin/management").hasAnyAuthority("ADMIN:READ")
+                .antMatchers("/admin/management").hasRole("ADMIN")
                 .antMatchers("**/user/**").hasRole("USER")
                 .anyRequest().permitAll()
 //                .authenticated()
