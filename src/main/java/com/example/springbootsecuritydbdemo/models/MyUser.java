@@ -11,14 +11,13 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import java.util.Collection;
-import java.util.Set;
+import java.util.*;
 
 @Setter
 @Getter
 @NoArgsConstructor
 @Entity
-public class MyUser implements UserDetails {
+public class MyUser {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,54 +27,28 @@ public class MyUser implements UserDetails {
 
     private String password;
 
-    private String role;
+    private String roles;
 
-//    private Set<SimpleGrantedAuthority> grantedAuthorities;
-    private boolean isAccountNonExpired;
-    private boolean isAccountNonLocked;
-    private boolean isCredentialsNonExpired;
-    private boolean isEnabled;
+    private String permissions;
 
-    public MyUser(String username,
-                  String password,
-                  String role,
-//                  Set<? extends GrantedAuthority> grantedAuthorities,
-                  boolean isAccountNonExpired,
-                  boolean isAccountNonLocked,
-                  boolean isCredentialsNonExpired,
-                  boolean isEnabled) {
+    public MyUser(String username, String password, String roles, String permissions) {
         this.username = username;
         this.password = password;
-        this.role = role;
-//        this.grantedAuthorities = grantedAuthorities;
-        this.isAccountNonExpired = isAccountNonExpired;
-        this.isAccountNonLocked = isAccountNonLocked;
-        this.isCredentialsNonExpired = isCredentialsNonExpired;
-        this.isEnabled = isEnabled;
+        this.roles = roles;
+        this.permissions = permissions;
     }
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+    public List<String> getRoleList(){
+        if(this.roles.length() > 0){
+            return Arrays.asList(this.roles.split(","));
+        }
+        return new ArrayList<>();
     }
 
-    @Override
-    public boolean isAccountNonExpired() {
-        return isAccountNonExpired;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return isAccountNonLocked;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return isCredentialsNonExpired;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
+    public List<String> getPermissionList(){
+        if(this.permissions.length() > 0){
+            return Arrays.asList(this.permissions.split(","));
+        }
+        return new ArrayList<>();
     }
 }

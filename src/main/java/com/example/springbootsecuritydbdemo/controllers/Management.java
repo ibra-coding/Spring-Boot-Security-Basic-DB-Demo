@@ -1,6 +1,6 @@
 package com.example.springbootsecuritydbdemo.controllers;
 
-import com.example.springbootsecuritydbdemo.services.MyUserService;
+import com.example.springbootsecuritydbdemo.security.UserPrincipalService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -8,13 +8,13 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/admin/management")
+@RequestMapping("admin/management")
 public class Management {
 
-    private final MyUserService myUserService;
+    private final UserPrincipalService userPrincipalService;
 
-    public Management(MyUserService myUserService) {
-        this.myUserService = myUserService;
+    public Management(UserPrincipalService userPrincipalService) {
+        this.userPrincipalService = userPrincipalService;
     }
 
 

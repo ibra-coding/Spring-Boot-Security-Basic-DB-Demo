@@ -1,41 +1,30 @@
 package com.example.springbootsecuritydbdemo.security;
 
 
-import com.example.springbootsecuritydbdemo.services.MyUserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.catalina.session.StandardManager;
+import org.springframework.boot.web.embedded.tomcat.TomcatContextCustomizer;
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.apache.catalina.Context;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 @EnableWebSecurity
 public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
 
-    private final PasswordEncoder passwordEncoder;
-    private final MyUserService myUserService;
+    private final UserPrincipalService userPrincipalService;
 
-    public AppSecurityConfig(PasswordEncoder passwordEncoder, MyUserService myUserService) {
-        this.passwordEncoder = passwordEncoder;
-        this.myUserService = myUserService;
-    }
-
-
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http
-                .csrf().disable()
-                .authorizeRequests()
-                .antMatchers("**/admin/**").hasAuthority("ADMIN")
-                .antMatchers("**/user/**").hasAuthority("USER")
-                .anyRequest()
-                .authenticated()
-                .and()
-                .httpBasic();
+    public AppSecurityConfig( UserPrincipalService userPrincipalService) {
+        this.userPrincipalService = userPrincipalService;
     }
 
     @Override
@@ -43,11 +32,41 @@ public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
         auth.authenticationProvider(daoAuthenticationProvider());
     }
 
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+                .csrf().disable()
+                .authorizeRequests()
+                .antMatchers("/admin/management").hasAnyAuthority("ADMIN:READ")
+                .antMatchers("**/user/**").hasRole("USER")
+                .anyRequest().permitAll()
+//                .authenticated()
+                .and()
+                .httpBasic()
+                .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
+    }
+
+    @Override
+    public void configure(WebSecurity web) throws Exception {
+        web
+                .ignoring()
+                .antMatchers("/h2-console/**");
+    }
+
+
     @Bean
     public DaoAuthenticationProvider daoAuthenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setPasswordEncoder(passwordEncoder);
-        provider.setUserDetailsService(myUserService);
+        provider.setPasswordEncoder(passwordEncoder());
+        provider.setUserDetailsService(this.userPrincipalService);
         return provider;
     }
+
+    @Bean
+    PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+
 }
